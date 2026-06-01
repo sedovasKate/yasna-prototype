@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Yasna — Usability Test</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #111113;
+  --frame: #1c1c1e;
+  --accent: #b8b3d4;
+  --text: #e8e6f0;
+  --muted: #555;
+  --phone-w: 390px;
+  --phone-h: 844px;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', sans-serif;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* ── Phone shell ── */
+.shell {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.phone {
+  position: relative;
+  width: min(var(--phone-w), 100vw);
+  height: min(var(--phone-h), 100vh);
+  overflow: hidden;
+  border-radius: clamp(0px, 2vw, 40px);
+  box-shadow: 0 40px 120px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.06);
+  background: #000;
+}
+
+/* ── Screens ── */
+.screen {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.32s cubic-bezier(.4,0,.2,1),
+              transform 0.32s cubic-bezier(.4,0,.2,1);
+  transform: translateX(60px);
+  will-change: transform, opacity;
+}
+
+.screen.active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(0);
+}
+
+.screen.exiting {
+  opacity: 0;
+  transform: translateX(-60px);
+  pointer-events: none;
+}
+
+.screen img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  -webkit-user-drag: none;
+  pointer-events: none;
+}
+
+/* ── Tap zones ── */
+.tap-zone {
+  position: absolute;
+  top: 0; bottom: 60px;
+  cursor: pointer;
+}
+.tap-next { left: 15%; right: 0; }
+.tap-prev { left: 0; width: 15%; }
+
+/* ── Overlay UI ── */
+.hud {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  padding: 12px 16px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.hud-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-orb {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  overflow: hidden;
+  animation: breathe 3.6s ease-in-out infinite;
+  position: relative;
+}
+.logo-orb::after {
+  content: '';
+  position: absolute;
+  inset: -5px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(180,175,220,0.3) 0%, transparent 70%);
+  animation: breathe 3.6s ease-in-out infinite;
+}
+
+.logo-orb img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.hud-title {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.75);
+  letter-spacing: 0.01em;
+}
+
+.hud-counter {
+  font-size: 11px;
+  color: rgba(255,255,255,0.35);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Progress bar ── */
+.progress-bar {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+  background: rgba(255,255,255,0.08);
+  z-index: 10;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--accent);
+  transition: width 0.3s ease;
+  border-radius: 0 2px 2px 0;
+}
+
+/* ── Tap hint (fades out) ── */
+.hint {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.3);
+  pointer-events: none;
+  z-index: 10;
+  animation: hintFade 4s ease forwards;
+  white-space: nowrap;
+}
+.hint svg { opacity: 0.5; }
+
+@keyframes hintFade {
+  0%   { opacity: 1; }
+  70%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ── End screen ── */
+.end-screen {
+  position: absolute;
+  inset: 0;
+  background: #0e0e10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s ease;
+  z-index: 20;
+}
+.end-screen.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+.end-logo {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  overflow: hidden;
+  animation: breathe 3.6s ease-in-out infinite;
+}
+.end-logo img { width: 100%; height: 100%; object-fit: cover; }
+.end-text {
+  text-align: center;
+  color: rgba(255,255,255,0.6);
+  font-size: 15px;
+  line-height: 1.6;
+}
+.end-text strong { color: var(--text); font-weight: 500; display: block; margin-bottom: 4px; }
+.restart-btn {
+  margin-top: 8px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: var(--text);
+  font-size: 14px;
+  padding: 12px 28px;
+  border-radius: 100px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.restart-btn:hover { background: rgba(255,255,255,0.14); }
+
+/* ── Desktop sidebar ── */
+.sidebar {
+  display: none;
+}
+
+@media (min-width: 500px) {
+  .shell { gap: 32px; }
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+    max-width: 180px;
+  }
+  .sidebar h2 {
+    font-size: 13px;
+    color: rgba(255,255,255,0.5);
+    font-weight: 400;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .thumb-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 80vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #333 transparent;
+  }
+  .thumb {
+    width: 160px;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    opacity: 0.4;
+    transition: opacity 0.15s, outline 0.15s;
+    outline: 2px solid transparent;
+    flex-shrink: 0;
+  }
+  .thumb.active {
+    opacity: 1;
+    outline-color: var(--accent);
+  }
+  .thumb:hover { opacity: 0.75; }
+  .thumb img { width: 100%; display: block; }
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- Desktop thumbnail nav -->
+  <div class="sidebar">
+    <h2>Экраны</h2>
+    <div class="thumb-list" id="thumbList"></div>
+  </div>
+
+  <!-- Phone -->
+  <div class="phone" id="phone">
+
+    <!-- HUD -->
+    <div class="hud">
+      <div class="hud-logo">
+        <div class="logo-orb">
+          <img src="https://www.figma.com/api/mcp/asset/6a462d00-5366-40f9-bfd5-686ca796476d" alt="">
+        </div>
+        <span class="hud-title">Yasna</span>
+      </div>
+      <span class="hud-counter" id="counter">1 / 20</span>
+    </div>
+
+    <!-- Screens -->
+    <div id="screens"></div>
+
+    <!-- Tap zones -->
+    <div class="tap-zone tap-prev" id="tapPrev"></div>
+    <div class="tap-zone tap-next" id="tapNext"></div>
+
+    <!-- Progress -->
+    <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+
+    <!-- Hint -->
+    <div class="hint" id="hint">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+        <path d="M2 7h10M8 3l4 4-4 4" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      тап — следующий экран
+    </div>
+
+    <!-- End screen -->
+    <div class="end-screen" id="endScreen">
+      <div class="end-logo">
+        <img src="https://www.figma.com/api/mcp/asset/6a462d00-5366-40f9-bfd5-686ca796476d" alt="">
+      </div>
+      <div class="end-text">
+        <strong>Спасибо!</strong>
+        Прототип завершён
+      </div>
+      <button class="restart-btn" id="restartBtn">Начать заново</button>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+const SCREENS = [
+  { url: "https://www.figma.com/api/mcp/asset/7f4412ec-ce6f-4ad8-a196-311cafb2fc37", label: "01 · Ясна — вопрос дня" },
+  { url: "https://www.figma.com/api/mcp/asset/d0cc29e1-b238-4982-b35b-a27271973be1", label: "02 · Главная" },
+  { url: "https://www.figma.com/api/mcp/asset/546b7309-2ab4-4770-acd5-bd90204de5da", label: "03 · Вопрос дня v2" },
+  { url: "https://www.figma.com/api/mcp/asset/f06e7e1a-883a-4ce6-a5cf-68a270245bde", label: "04" },
+  { url: "https://www.figma.com/api/mcp/asset/6b746e05-da09-4660-9771-1af481f35ce0", label: "05" },
+  { url: "https://www.figma.com/api/mcp/asset/a4529504-ae8d-43b9-b57c-cba6d5bb3284", label: "06" },
+  { url: "https://www.figma.com/api/mcp/asset/c390b628-2065-4ba1-8fd9-f7a600287f12", label: "07" },
+  { url: "https://www.figma.com/api/mcp/asset/d6b9361d-1973-4b58-be16-dea19d3ce0f3", label: "08" },
+  { url: "https://www.figma.com/api/mcp/asset/2b49659c-4e0e-438c-a50f-5a26f555e9a3", label: "09" },
+  { url: "https://www.figma.com/api/mcp/asset/4d8f2856-c19d-44a8-8370-22b774c99beb", label: "10" },
+  { url: "https://www.figma.com/api/mcp/asset/673b8dbb-d75b-4d82-a302-e7a37e383171", label: "11" },
+  { url: "https://www.figma.com/api/mcp/asset/4e5b5b8e-b90b-4236-809b-da62bc2fa964", label: "12" },
+  { url: "https://www.figma.com/api/mcp/asset/550545dd-e60d-4746-bf89-148bdf74f016", label: "13" },
+  { url: "https://www.figma.com/api/mcp/asset/db1ddfdb-dd89-4722-9797-428a282d7120", label: "14" },
+  { url: "https://www.figma.com/api/mcp/asset/91475346-7978-4ddf-bbff-bbb2d080bc70", label: "15" },
+  { url: "https://www.figma.com/api/mcp/asset/02ce5299-52d9-4558-b787-46be8eab0548", label: "16" },
+  { url: "https://www.figma.com/api/mcp/asset/eda750c7-992f-4052-bd14-67eddc664bfa", label: "17" },
+  { url: "https://www.figma.com/api/mcp/asset/a0039317-8030-4c5c-8447-37b5677fe0b7", label: "18" },
+  { url: "https://www.figma.com/api/mcp/asset/d404462c-52b5-4d23-9229-a55ec6b1e6f3", label: "19" },
+  { url: "https://www.figma.com/api/mcp/asset/c09f0e84-fb9b-41a4-9f2f-12bdadeccb91", label: "20" },
+];
+
+let current = 0;
+const container = document.getElementById('screens');
+const thumbList = document.getElementById('thumbList');
+const counter = document.getElementById('counter');
+const progress = document.getElementById('progress');
+const endScreen = document.getElementById('endScreen');
+const hint = document.getElementById('hint');
+
+// Build screens
+const screenEls = SCREENS.map((s, i) => {
+  const el = document.createElement('div');
+  el.className = 'screen' + (i === 0 ? ' active' : '');
+  el.innerHTML = `<img src="${s.url}" alt="${s.label}" loading="${i < 3 ? 'eager' : 'lazy'}">`;
+  container.appendChild(el);
+  return el;
+});
+
+// Build thumbnails
+SCREENS.forEach((s, i) => {
+  const t = document.createElement('div');
+  t.className = 'thumb' + (i === 0 ? ' active' : '');
+  t.innerHTML = `<img src="${s.url}" alt="${s.label}" loading="lazy">`;
+  t.addEventListener('click', () => goTo(i));
+  thumbList.appendChild(t);
+});
+const thumbEls = thumbList.querySelectorAll('.thumb');
+
+function updateUI() {
+  counter.textContent = `${current + 1} / ${SCREENS.length}`;
+  progress.style.width = `${((current + 1) / SCREENS.length) * 100}%`;
+  thumbEls.forEach((t, i) => t.classList.toggle('active', i === current));
+  // Scroll thumb into view
+  thumbEls[current]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+function goTo(idx) {
+  if (idx < 0 || idx >= SCREENS.length) return;
+  const prev = screenEls[current];
+  prev.classList.remove('active');
+  prev.classList.add('exiting');
+  setTimeout(() => prev.classList.remove('exiting'), 340);
+  current = idx;
+  screenEls[current].classList.add('active');
+  updateUI();
+}
+
+function next() {
+  if (current >= SCREENS.length - 1) {
+    endScreen.classList.add('active');
+    return;
+  }
+  goTo(current + 1);
+}
+
+function prev() {
+  if (current > 0) goTo(current - 1);
+}
+
+// Tap zones
+document.getElementById('tapNext').addEventListener('click', next);
+document.getElementById('tapPrev').addEventListener('click', prev);
+
+// Restart
+document.getElementById('restartBtn').addEventListener('click', () => {
+  endScreen.classList.remove('active');
+  goTo(0);
+});
+
+// Keyboard
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); prev(); }
+});
+
+// Swipe
+let touchX = null, touchY = null;
+document.getElementById('phone').addEventListener('touchstart', e => {
+  touchX = e.touches[0].clientX;
+  touchY = e.touches[0].clientY;
+}, { passive: true });
+document.getElementById('phone').addEventListener('touchend', e => {
+  if (touchX === null) return;
+  const dx = e.changedTouches[0].clientX - touchX;
+  const dy = e.changedTouches[0].clientY - touchY;
+  if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+    dx < 0 ? next() : prev();
+  }
+  touchX = null;
+}, { passive: true });
+
+// Hide hint after first tap
+function hideHint() {
+  hint.style.display = 'none';
+  document.removeEventListener('click', hideHint);
+}
+document.addEventListener('click', hideHint);
+
+updateUI();
+</script>
+</body>
+</html>
