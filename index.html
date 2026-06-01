@@ -7,11 +7,6 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-:root {
-  --pw: 390px;
-  --ph: 844px;
-}
-
 html, body {
   width: 100%; height: 100%;
   background: #0e0e10;
@@ -22,7 +17,6 @@ html, body {
   -webkit-user-select: none;
 }
 
-/* ── Shell ── */
 .shell {
   position: fixed; inset: 0;
   display: flex;
@@ -31,11 +25,10 @@ html, body {
   gap: 28px;
 }
 
-/* ── Phone ── */
 .phone {
   position: relative;
-  width: min(var(--pw), 100vw);
-  height: min(var(--ph), 100svh);
+  width: min(390px, 100vw);
+  height: min(844px, 100svh);
   border-radius: clamp(0px, 4vw, 44px);
   overflow: hidden;
   box-shadow: 0 32px 96px rgba(0,0,0,0.75), 0 0 0 1px rgba(255,255,255,0.06);
@@ -43,429 +36,319 @@ html, body {
   flex-shrink: 0;
 }
 
-/* ── Screens ── */
-.screen {
-  position: absolute; inset: 0;
-  display: none;
-}
+.screen { position: absolute; inset: 0; display: none; }
 .screen.active { display: block; }
 
 .screen > .bg {
   position: absolute; inset: 0;
   width: 100%; height: 100%;
-  object-fit: cover;
-  object-position: top center;
-  display: block;
-  pointer-events: none;
+  object-fit: cover; object-position: top center;
+  display: block; pointer-events: none;
 }
 
-/* ── Hotspots ── */
+/* Hotspots — z-index 20, выше тап-зон */
 .hs {
   position: absolute;
   cursor: pointer;
-  border-radius: 12px;
-  transition: background 0.1s;
   z-index: 20;
-  /* Uncomment to debug: */
-  /* background: rgba(132,119,180,0.2); outline: 1px dashed #8477b4; */
+  /* debug: background: rgba(132,119,180,0.25); outline: 1px dashed #8477b4; */
 }
-.hs:active { background: rgba(132,119,180,0.18) !important; }
+.hs:active { background: rgba(132,119,180,0.2); }
 
-/* ── Yasna Symbol — breathing overlay ── */
-.yasna-symbol {
+/* Yasna Symbol breathing */
+.yasna-sym {
   position: absolute;
-  width: 128px;
-  height: 128px;
+  left: 33.59%;   /* 131/390 */
+  width: 32.82%;  /* 128/390 */
+  height: 15.17%; /* 128/844 */
   pointer-events: none;
+  z-index: 15;
   animation: breathe 3.6s ease-in-out infinite;
   transform-origin: center center;
 }
+.yasna-sym.pos-434 { top: 51.42%; }
+.yasna-sym.pos-396 { top: 46.92%; }
 
 @keyframes breathe {
-  0%   { transform: scale(1);    opacity: 1; }
-  50%  { transform: scale(1.10); opacity: 0.92; }
-  100% { transform: scale(1);    opacity: 1; }
+  0%,100% { transform: scale(1);    opacity: 1; }
+  50%      { transform: scale(1.12); opacity: 0.88; }
 }
 
-/* ── Progress bar ── */
+/* Tap zones — z-index 5 (ниже хотспотов) */
+.tap-back { position: absolute; top:0; left:0; width:12%; height:100%; z-index:5; cursor:pointer; }
+.tap-fwd  { position: absolute; top:0; right:0; width:18%; height:68%; z-index:5; cursor:pointer; }
+
 .progress {
-  position: absolute;
-  bottom: 0; left: 0;
-  height: 3px;
-  background: rgba(132,119,180,0.55);
-  transition: width 0.3s ease;
-  z-index: 30;
+  position: absolute; bottom:0; left:0;
+  height:3px; z-index:30;
+  background: rgba(132,119,180,0.6);
   border-radius: 0 2px 0 0;
+  transition: width 0.3s ease;
   pointer-events: none;
 }
 
-/* ── Counter ── */
 .counter {
-  position: absolute;
-  top: 14px; right: 14px;
-  font-size: 11px;
-  color: rgba(255,255,255,0.4);
-  background: rgba(0,0,0,0.28);
-  padding: 3px 9px;
-  border-radius: 20px;
-  z-index: 30;
-  pointer-events: none;
-  backdrop-filter: blur(4px);
+  position: absolute; top:14px; right:14px;
+  font-size:11px; color:rgba(255,255,255,0.4);
+  background:rgba(0,0,0,0.3); padding:3px 9px;
+  border-radius:20px; z-index:30;
+  pointer-events:none; backdrop-filter:blur(4px);
 }
 
-/* ── Tap zones (fallback when no hotspot hit) ── */
-.tap-back {
-  position: absolute;
-  top: 0; left: 0;
-  width: 15%; height: 100%;
-  z-index: 5;
-  cursor: pointer;
-}
-.tap-fwd {
-  position: absolute;
-  top: 0; right: 0;
-  width: 20%; height: 70%;
-  z-index: 5;
-  cursor: pointer;
-}
-
-/* ── Sidebar ── */
 .sidebar {
-  display: none;
-  flex-direction: column;
-  gap: 6px;
-  max-height: 90vh;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: #2a2a2e transparent;
-  padding-right: 2px;
+  display: none; flex-direction:column;
+  gap:6px; max-height:90vh;
+  overflow-y:auto; scrollbar-width:thin;
+  scrollbar-color:#222 transparent;
 }
-@media (min-width: 700px) { .sidebar { display: flex; } }
+@media (min-width:700px) { .sidebar { display:flex; } }
 
 .thumb {
-  width: 72px;
-  border-radius: 9px;
-  overflow: hidden;
-  opacity: 0.38;
-  cursor: pointer;
-  transition: opacity 0.15s, outline 0.15s;
-  flex-shrink: 0;
+  width:72px; border-radius:9px;
+  overflow:hidden; opacity:0.35;
+  cursor:pointer; flex-shrink:0;
+  transition: opacity 0.15s, outline 0.1s;
 }
-.thumb.active { opacity: 1; outline: 2px solid #8477b4; }
-.thumb:hover:not(.active) { opacity: 0.72; }
-.thumb img { width: 100%; display: block; }
+.thumb.active { opacity:1; outline:2px solid #8477b4; }
+.thumb:hover:not(.active) { opacity:0.7; }
+.thumb img { width:100%; display:block; }
 .thumb-label {
-  font-size: 8px;
-  color: #444;
-  padding: 2px 4px;
-  background: #111;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size:8px; color:#444;
+  padding:2px 4px; background:#111;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
 </style>
 </head>
 <body>
-
 <div class="shell">
-
-  <!-- ══ Phone ══ -->
   <div class="phone" id="phone">
     <div class="counter" id="counter">1 / 20</div>
     <div class="progress" id="progress" style="width:5%"></div>
 
-    <!-- S00 · 1_Cover -->
+    <!-- 00 · Cover -->
     <div class="screen active" id="s0">
-      <img class="bg" src="https://www.figma.com/api/mcp/asset/fe85b5f2-8d86-4f5b-bb34-67293696282a" alt="" loading="eager">
-      <!-- "Покажи, что умеешь" button -->
-      <div class="hs" style="left:6.15%;top:89.57%;width:87.69%;height:5.69%;" onclick="go(1)" title="Покажи, что умеешь"></div>
+      <img class="bg" src="https://www.figma.com/api/mcp/asset/89b42ea8-c541-41b6-823a-515f46146b01" loading="eager" alt="">
+      <div class="hs" style="left:6.15%;top:89.57%;width:87.69%;height:5.69%;border-radius:24px;" onclick="go(1)" title="Покажи, что умеешь"></div>
     </div>
 
-    <!-- S01 · 2_1_Onboarding_Goal -->
+    <!-- 01 · Onboarding Goal -->
     <div class="screen" id="s1">
-      <img class="bg" src="https://www.figma.com/api/mcp/asset/1b2589a4-5976-48d5-ac9d-6ca8332c016d" alt="" loading="lazy">
-      <!-- Toggle "Расписание" (active) → начать онбординг -->
-      <div class="hs" style="left:20.26%;top:48.82%;width:27.44%;height:4.38%;" onclick="go(2)" title="Расписание → начать"></div>
+      <img class="bg" src="https://www.figma.com/api/mcp/asset/9e0d7d62-125d-45e2-8665-18083bf431a7" loading="lazy" alt="">
+      <div class="hs" style="left:20.26%;top:48.82%;width:27.44%;height:4.38%;border-radius:20px;" onclick="go(2)" title="Расписание → онбординг"></div>
     </div>
 
-    <!-- S02 · 2_2.1_Onboarding 1/5 -->
+    <!-- 02 · Онбординг 1/5 -->
     <div class="screen" id="s2">
-      <img class="bg" src="https://www.figma.com/api/mcp/asset/34ac0823-1066-4276-9628-0e996399cb8a" alt="" loading="lazy">
-      <!-- Input form (отправить / пропустить) -->
-      <div class="hs" style="left:6.15%;top:75.47%;width:87.69%;height:11.61%;" onclick="go(3)" title="Далее"></div>
+      <img class="bg" src="https://www.figma.com/api/mcp/asset/e3378c94-7cb0-4f56-bd52-7011bac69c0e" loading="lazy" alt="">
+      <div class="hs" style="left:6.15%;top:75.47%;width:87.69%;height:11.61%;border-radius:24px;" onclick="go(3)"></div>
     </div>
 
-    <!-- S03 · 2_2.2_Onboarding 2/5 -->
+    <!-- 03 · Онбординг 2/5 -->
     <div class="screen" id="s3">
-      <img class="bg" src="https://www.figma.com/api/mcp/asset/b8394e3e-e87c-4a9f-b65b-e6ff3d3b0d04" alt="" loading="lazy">
-      <div class="hs" style="left:6.15%;top:75.47%;width:87.69%;height:11.61%;" onclick="go(4)" title="Далее"></div>
+      <img class="bg" src="https://www.figma.com/api/mcp/asset/e1862e7a-9be8-4948-b597-67bc34f8423c" loading="lazy" alt="">
+      <div class="hs" style="left:6.15%;top:75.47%;width:87.69%;height:11.61%;border-radius:24px;" onclick="go(4)"></div>
     </div>
 
-    <!-- S04 · 2_2.3_Onboarding 3/5 -->
+    <!-- 04 · Онбординг 3/5 -->
     <div class="screen" id="s4">
-      <img class="bg" src="https://www.figma.com/api/mcp/asset/4f4c11ef-84fb-40a9-9ef6-3158f0a4a00d" alt="" loading="lazy">
-      <div class="hs" style="left:6.15%;top:75.47%;width:87.69%;height:11.61%;" onclick="go(5)" title="Далее"></div>
+      <img class="bg" src="https://www.figma.com/api/mcp/asset/34ee3fb1-c826-4aa6-a448-52fd544dc8c5" loading="lazy" alt="">
+      <div class="hs" style="left:6.15%;top:75.47%;width:87.69%;height:11.61%;border-radius:24px;" onclick="go(5)"></div>
     </div>
 
-    <!-- S05 · 2_2.4_Onboarding 4/5 -->
+    <!-- 05 · Онбординг 4/5 -->
     <div class="screen" id="s5">
-      <img class="bg" src="https://www.figma.com/api/mcp/asset/6c1fd7f3-8fed-4e14-b211-0d614565bf41" alt="" loading="lazy">
-      <div class="hs" style="left:6.15%;top:75.47%;width:87.69%;height:11.61%;" onclick="go(6)" title="Далее"></div>
+      <img class="bg" src="https://www.figma.com/api/mcp/asset/5f1387d2-64fe-41f3-9e9f-2fffec9acac0" loading="lazy" alt="">
+      <div class="hs" style="left:6.15%;top:75.47%;width:87.69%;height:11.61%;border-radius:24px;" onclick="go(6)"></div>
     </div>
 
-    <!-- S06 · 2_2.5_Onboarding 5/5 -->
+    <!-- 06 · Онбординг 5/5 -->
     <div class="screen" id="s6">
-      <img class="bg" src="https://www.figma.com/api/mcp/asset/6a59d7fb-83a9-4e92-84c9-fee6036d2dc0" alt="" loading="lazy">
-      <div class="hs" style="left:6.15%;top:75.47%;width:87.69%;height:11.61%;" onclick="go(7)" title="Далее"></div>
+      <img class="bg" src="https://www.figma.com/api/mcp/asset/a53ec1ba-9142-492d-9b06-756a55b6369f" loading="lazy" alt="">
+      <div class="hs" style="left:6.15%;top:75.47%;width:87.69%;height:11.61%;border-radius:24px;" onclick="go(7)"></div>
     </div>
 
-    <!-- S07 · 3_Portret -->
+    <!-- 07 · Портрет -->
     <div class="screen" id="s7">
-      <img class="bg" src="https://www.figma.com/api/mcp/asset/1854fde9-f742-4065-8dde-4ffe2a45243c" alt="" loading="lazy">
-      <!-- "Точно, пойдём к целям" -->
-      <div class="hs" style="left:6.15%;top:82.34%;width:87.69%;height:5.69%;" onclick="go(8)" title="Точно, пойдём к целям"></div>
+      <img class="bg" src="https://www.figma.com/api/mcp/asset/880cfd3e-e523-4967-9bce-8c55bcd3d41e" loading="lazy" alt="">
+      <div class="hs" style="left:6.15%;top:82.34%;width:87.69%;height:5.69%;border-radius:24px;" onclick="go(8)" title="Точно, пойдём к целям"></div>
     </div>
 
-    <!-- S08 · 4_Goal_Question -->
+    <!-- 08 · Цель -->
     <div class="screen" id="s8">
-      <img class="bg" src="https://www.figma.com/api/mcp/asset/f2218c61-73ca-4459-85dd-89ff6493f49e" alt="" loading="lazy">
-      <!-- Input form (full width) -->
-      <div class="hs" style="left:0%;top:76.42%;width:100%;height:11.61%;" onclick="go(9)" title="Далее" style="border-radius:0;"></div>
+      <img class="bg" src="https://www.figma.com/api/mcp/asset/a3975933-6b90-4520-aea0-bd469838cfa4" loading="lazy" alt="">
+      <div class="hs" style="left:0%;top:76.42%;width:100%;height:11.61%;border-radius:0;" onclick="go(9)"></div>
     </div>
 
-    <!-- S09 · 4_1_Planner_Tasks -->
+    <!-- 09 · Планировщик задачи -->
     <div class="screen" id="s9">
-      <img class="bg" src="https://www.figma.com/api/mcp/asset/aa48f717-dfe6-4934-b27d-35172b645f61" alt="" loading="lazy">
-      <!-- Input form "Выбрать время" -->
-      <div class="hs" style="left:6.15%;top:76.42%;width:87.69%;height:11.61%;" onclick="go(10)" title="Выбрать время для задач"></div>
+      <img class="bg" src="https://www.figma.com/api/mcp/asset/2cab8511-7ebc-411a-b1ca-069311991fe9" loading="lazy" alt="">
+      <div class="hs" style="left:6.15%;top:76.42%;width:87.69%;height:11.61%;border-radius:24px;" onclick="go(10)" title="Выбрать время"></div>
     </div>
 
-    <!-- S10 · 4_2_Planner_Time -->
+    <!-- 10 · Планировщик время -->
     <div class="screen" id="s10">
-      <img class="bg" src="https://www.figma.com/api/mcp/asset/ffed12e0-8947-4d40-9ced-2b0c5a5e7c5e" alt="" loading="lazy">
-      <!-- Input form "Перейти к расписанию" -->
-      <div class="hs" style="left:6.15%;top:71.92%;width:87.69%;height:11.61%;" onclick="go(11)" title="Перейти к расписанию"></div>
+      <img class="bg" src="https://www.figma.com/api/mcp/asset/5af40108-3ea4-47a1-bfcc-d5eccd2d6672" loading="lazy" alt="">
+      <div class="hs" style="left:6.15%;top:71.92%;width:87.69%;height:11.61%;border-radius:24px;" onclick="go(11)" title="Перейти к расписанию"></div>
     </div>
 
-    <!-- S11 · 5_1_Schedule -->
+    <!-- 11 · Расписание -->
     <div class="screen" id="s11">
-      <img class="bg" src="https://www.figma.com/api/mcp/asset/dd189309-da82-4a21-b73b-183ed3510b98" alt="" loading="lazy">
-      <!-- Toggle: Задачи -->
-      <div class="hs" style="left:54.62%;top:9.72%;width:22.82%;height:4.38%;" onclick="go(12)" title="Задачи" style="border-radius:20px;"></div>
-      <!-- Tabbar: Ясна -->
-      <div class="hs" style="left:34.87%;top:88.15%;width:12.31%;height:6.64%;" onclick="go(17)" title="Ясна" style="border-radius:24px;"></div>
-      <!-- Tabbar: Поток -->
-      <div class="hs" style="left:52.82%;top:88.15%;width:12.31%;height:6.64%;" onclick="go(13)" title="Поток" style="border-radius:24px;"></div>
-      <!-- Tabbar: sKate -->
-      <div class="hs" style="left:70.77%;top:88.15%;width:12.31%;height:6.64%;" onclick="go(19)" title="sKate" style="border-radius:24px;"></div>
+      <img class="bg" src="https://www.figma.com/api/mcp/asset/83465d4a-257e-4574-816f-33a8c323031c" loading="lazy" alt="">
+      <div class="hs" style="left:54.62%;top:9.72%;width:22.82%;height:4.38%;border-radius:20px;" onclick="go(12)" title="Задачи"></div>
+      <div class="hs" style="left:34.87%;top:88.15%;width:12.31%;height:6.64%;border-radius:24px;" onclick="go(17)" title="Ясна"></div>
+      <div class="hs" style="left:52.82%;top:88.15%;width:12.31%;height:6.64%;border-radius:24px;" onclick="go(13)" title="Поток"></div>
+      <div class="hs" style="left:70.77%;top:88.15%;width:12.31%;height:6.64%;border-radius:24px;" onclick="go(19)" title="sKate"></div>
     </div>
 
-    <!-- S12 · 5_2_Tasks -->
+    <!-- 12 · Задачи -->
     <div class="screen" id="s12">
-      <img class="bg" src="https://www.figma.com/api/mcp/asset/6e27d50d-0370-4b77-9768-c7ee1140e2a5" alt="" loading="lazy">
-      <!-- Toggle: Расписание -->
-      <div class="hs" style="left:22.56%;top:9.72%;width:32.05%;height:4.38%;" onclick="go(11)" title="Расписание" style="border-radius:20px;"></div>
-      <!-- Tabbar: Ясна -->
-      <div class="hs" style="left:34.87%;top:88.15%;width:12.31%;height:6.64%;" onclick="go(17)" title="Ясна" style="border-radius:24px;"></div>
-      <!-- Tabbar: Поток -->
-      <div class="hs" style="left:52.82%;top:88.15%;width:12.31%;height:6.64%;" onclick="go(13)" title="Поток" style="border-radius:24px;"></div>
-      <!-- Tabbar: sKate -->
-      <div class="hs" style="left:70.77%;top:88.15%;width:12.31%;height:6.64%;" onclick="go(19)" title="sKate" style="border-radius:24px;"></div>
+      <img class="bg" src="https://www.figma.com/api/mcp/asset/c8dea07d-03c3-4b4e-b674-ac1cff6f687a" loading="lazy" alt="">
+      <div class="hs" style="left:22.56%;top:9.72%;width:32.05%;height:4.38%;border-radius:20px;" onclick="go(11)" title="Расписание"></div>
+      <div class="hs" style="left:34.87%;top:88.15%;width:12.31%;height:6.64%;border-radius:24px;" onclick="go(17)" title="Ясна"></div>
+      <div class="hs" style="left:52.82%;top:88.15%;width:12.31%;height:6.64%;border-radius:24px;" onclick="go(13)" title="Поток"></div>
+      <div class="hs" style="left:70.77%;top:88.15%;width:12.31%;height:6.64%;border-radius:24px;" onclick="go(19)" title="sKate"></div>
     </div>
 
-    <!-- S13 · 6_1.1_Stream -->
+    <!-- 13 · Поток -->
     <div class="screen" id="s13">
-      <img class="bg" src="https://www.figma.com/api/mcp/asset/4e1ed670-1f78-4bfe-a43d-978111148339" alt="" loading="lazy">
-      <!-- Toggle: Папки -->
-      <div class="hs" style="left:49.74%;top:11.61%;width:21.03%;height:4.38%;" onclick="go(16)" title="Папки" style="border-radius:20px;"></div>
-      <!-- Send → Yasna response -->
-      <div class="hs" style="left:79.49%;top:79.15%;width:12.31%;height:5.69%;" onclick="go(14)" title="Отправить" style="border-radius:50%;"></div>
-      <!-- Tabbar: Plan -->
-      <div class="hs" style="left:18.97%;top:88.15%;width:12.31%;height:6.64%;" onclick="go(11)" title="План" style="border-radius:24px;"></div>
-      <!-- Tabbar: Ясна -->
-      <div class="hs" style="left:35.64%;top:88.15%;width:12.31%;height:6.64%;" onclick="go(17)" title="Ясна" style="border-radius:24px;"></div>
-      <!-- Tabbar: sKate -->
-      <div class="hs" style="left:68.72%;top:88.15%;width:12.31%;height:6.64%;" onclick="go(19)" title="sKate" style="border-radius:24px;"></div>
+      <img class="bg" src="https://www.figma.com/api/mcp/asset/48780406-8114-4e28-81b5-542d0ec1a148" loading="lazy" alt="">
+      <div class="hs" style="left:49.74%;top:11.61%;width:21.03%;height:4.38%;border-radius:20px;" onclick="go(16)" title="Папки"></div>
+      <div class="hs" style="left:79.49%;top:79.15%;width:12.31%;height:5.69%;border-radius:50%;" onclick="go(14)" title="Отправить → Ясна отвечает"></div>
+      <div class="hs" style="left:18.97%;top:88.15%;width:12.31%;height:6.64%;border-radius:24px;" onclick="go(11)" title="План"></div>
+      <div class="hs" style="left:35.64%;top:88.15%;width:12.31%;height:6.64%;border-radius:24px;" onclick="go(17)" title="Ясна"></div>
+      <div class="hs" style="left:68.72%;top:88.15%;width:12.31%;height:6.64%;border-radius:24px;" onclick="go(19)" title="sKate"></div>
     </div>
 
-    <!-- S14 · 6_1.2_Stream & Yasna -->
+    <!-- 14 · Поток + Ясна -->
     <div class="screen" id="s14">
-      <img class="bg" src="https://www.figma.com/api/mcp/asset/67b84665-e90d-4334-8404-0ce8d2f73209" alt="" loading="lazy">
-      <!-- Tabbar: Plan -->
-      <div class="hs" style="left:18.97%;top:88.15%;width:12.31%;height:6.64%;" onclick="go(11)" title="План" style="border-radius:24px;"></div>
-      <!-- Tabbar: Ясна -->
-      <div class="hs" style="left:35.64%;top:88.15%;width:12.31%;height:6.64%;" onclick="go(17)" title="Ясна" style="border-radius:24px;"></div>
-      <!-- Tabbar: sKate -->
-      <div class="hs" style="left:68.72%;top:88.15%;width:12.31%;height:6.64%;" onclick="go(19)" title="sKate" style="border-radius:24px;"></div>
+      <img class="bg" src="https://www.figma.com/api/mcp/asset/d1b5d378-6949-4791-bbd5-9e034b86d149" loading="lazy" alt="">
+      <div class="hs" style="left:18.97%;top:88.15%;width:12.31%;height:6.64%;border-radius:24px;" onclick="go(11)" title="План"></div>
+      <div class="hs" style="left:35.64%;top:88.15%;width:12.31%;height:6.64%;border-radius:24px;" onclick="go(17)" title="Ясна"></div>
+      <div class="hs" style="left:68.72%;top:88.15%;width:12.31%;height:6.64%;border-radius:24px;" onclick="go(19)" title="sKate"></div>
     </div>
 
-    <!-- S15 · 6_1.3_Stream First Open -->
+    <!-- 15 · Поток первый раз — символ дышит -->
     <div class="screen" id="s15">
-      <img class="bg" src="https://www.figma.com/api/mcp/asset/6bedeb66-9947-4c5b-b195-871db282c693" alt="" loading="lazy">
-      <!-- Yasna Symbol breathing -->
-      <img class="yasna-symbol" style="left:131px;top:434px;" src="https://www.figma.com/api/mcp/asset/4eecefcf-a0ce-4198-8026-7c88ca5bcd16" alt="">
-      <!-- Tabbar: Plan -->
-      <div class="hs" style="left:18.97%;top:88.15%;width:12.31%;height:6.64%;" onclick="go(11)" title="План" style="border-radius:24px;"></div>
-      <!-- Tabbar: Ясна -->
-      <div class="hs" style="left:35.64%;top:88.15%;width:12.31%;height:6.64%;" onclick="go(17)" title="Ясна" style="border-radius:24px;"></div>
-      <!-- Tabbar: sKate -->
-      <div class="hs" style="left:68.72%;top:88.15%;width:12.31%;height:6.64%;" onclick="go(19)" title="sKate" style="border-radius:24px;"></div>
+      <img class="bg" src="https://www.figma.com/api/mcp/asset/31e164c7-e617-4138-b01f-45274fa6ac10" loading="lazy" alt="">
+      <img class="yasna-sym pos-434" src="https://www.figma.com/api/mcp/asset/a8bc37f1-6cdb-4173-b5ed-e8d50ec5a83a" alt="">
+      <div class="hs" style="left:18.97%;top:88.15%;width:12.31%;height:6.64%;border-radius:24px;" onclick="go(11)" title="План"></div>
+      <div class="hs" style="left:35.64%;top:88.15%;width:12.31%;height:6.64%;border-radius:24px;" onclick="go(17)" title="Ясна"></div>
+      <div class="hs" style="left:68.72%;top:88.15%;width:12.31%;height:6.64%;border-radius:24px;" onclick="go(19)" title="sKate"></div>
     </div>
 
-    <!-- S16 · 6_2_Folders -->
+    <!-- 16 · Папки -->
     <div class="screen" id="s16">
-      <img class="bg" src="https://www.figma.com/api/mcp/asset/e47a8d2a-0ea1-49f7-9f0e-dca6fae86ff2" alt="" loading="lazy">
-      <!-- Toggle: Поток -->
-      <div class="hs" style="left:29.49%;top:11.61%;width:21.03%;height:4.38%;" onclick="go(13)" title="Поток" style="border-radius:20px;"></div>
-      <!-- Tabbar: Plan -->
-      <div class="hs" style="left:18.97%;top:88.15%;width:12.31%;height:6.64%;" onclick="go(11)" title="План" style="border-radius:24px;"></div>
-      <!-- Tabbar: Ясна -->
-      <div class="hs" style="left:35.64%;top:88.15%;width:12.31%;height:6.64%;" onclick="go(17)" title="Ясна" style="border-radius:24px;"></div>
-      <!-- Tabbar: sKate -->
-      <div class="hs" style="left:68.72%;top:88.15%;width:12.31%;height:6.64%;" onclick="go(19)" title="sKate" style="border-radius:24px;"></div>
+      <img class="bg" src="https://www.figma.com/api/mcp/asset/b09d703f-3b23-4505-a98c-65e2f7d6c92c" loading="lazy" alt="">
+      <div class="hs" style="left:29.49%;top:11.61%;width:21.03%;height:4.38%;border-radius:20px;" onclick="go(13)" title="Поток"></div>
+      <div class="hs" style="left:18.97%;top:88.15%;width:12.31%;height:6.64%;border-radius:24px;" onclick="go(11)" title="План"></div>
+      <div class="hs" style="left:35.64%;top:88.15%;width:12.31%;height:6.64%;border-radius:24px;" onclick="go(17)" title="Ясна"></div>
+      <div class="hs" style="left:68.72%;top:88.15%;width:12.31%;height:6.64%;border-radius:24px;" onclick="go(19)" title="sKate"></div>
     </div>
 
-    <!-- S17 · 7_1.1v_Yasna_Day Question (пустой ввод) -->
+    <!-- 17 · Ясна — вопрос дня — символ дышит -->
     <div class="screen" id="s17">
-      <img class="bg" src="https://www.figma.com/api/mcp/asset/b99a83c2-65eb-476d-9be0-f59fff718c37" alt="" loading="lazy">
-      <!-- Yasna Symbol breathing -->
-      <img class="yasna-symbol" style="left:131px;top:396px;" src="https://www.figma.com/api/mcp/asset/4eecefcf-a0ce-4198-8026-7c88ca5bcd16" alt="">
-      <!-- Input form → ответ Ясны -->
-      <div class="hs" style="left:6.15%;top:69.67%;width:87.69%;height:16.11%;" onclick="go(18)" title="Написать Ясне"></div>
-      <!-- Tabbar: Plan -->
-      <div class="hs" style="left:18.97%;top:88.15%;width:12.31%;height:6.64%;" onclick="go(11)" title="План" style="border-radius:24px;"></div>
-      <!-- Tabbar: Поток -->
-      <div class="hs" style="left:52.05%;top:88.15%;width:12.31%;height:6.64%;" onclick="go(13)" title="Поток" style="border-radius:24px;"></div>
-      <!-- Tabbar: sKate -->
-      <div class="hs" style="left:68.72%;top:88.15%;width:12.31%;height:6.64%;" onclick="go(19)" title="sKate" style="border-radius:24px;"></div>
+      <img class="bg" src="https://www.figma.com/api/mcp/asset/c67cb188-f71f-4f75-9847-80bc090af521" loading="lazy" alt="">
+      <img class="yasna-sym pos-396" src="https://www.figma.com/api/mcp/asset/a8bc37f1-6cdb-4173-b5ed-e8d50ec5a83a" alt="">
+      <div class="hs" style="left:6.15%;top:69.67%;width:87.69%;height:11.61%;border-radius:24px;" onclick="go(18)" title="Написать Ясне"></div>
+      <div class="hs" style="left:18.97%;top:88.15%;width:12.31%;height:6.64%;border-radius:24px;" onclick="go(11)" title="План"></div>
+      <div class="hs" style="left:52.05%;top:88.15%;width:12.31%;height:6.64%;border-radius:24px;" onclick="go(13)" title="Поток"></div>
+      <div class="hs" style="left:68.72%;top:88.15%;width:12.31%;height:6.64%;border-radius:24px;" onclick="go(19)" title="sKate"></div>
     </div>
 
-    <!-- S18 · 7_1.2v_Yasna_Day Question (с ответом) -->
+    <!-- 18 · Ясна — ответ — символ дышит -->
     <div class="screen" id="s18">
-      <img class="bg" src="https://www.figma.com/api/mcp/asset/c484dd7b-0bad-4415-9dc6-7cdb6f2b993c" alt="" loading="lazy">
-      <!-- Yasna Symbol breathing -->
-      <img class="yasna-symbol" style="left:131px;top:396px;" src="https://www.figma.com/api/mcp/asset/4eecefcf-a0ce-4198-8026-7c88ca5bcd16" alt="">
-      <!-- Tabbar: Plan -->
-      <div class="hs" style="left:18.97%;top:88.15%;width:12.31%;height:6.64%;" onclick="go(11)" title="План" style="border-radius:24px;"></div>
-      <!-- Tabbar: Поток -->
-      <div class="hs" style="left:52.05%;top:88.15%;width:12.31%;height:6.64%;" onclick="go(13)" title="Поток" style="border-radius:24px;"></div>
-      <!-- Tabbar: sKate -->
-      <div class="hs" style="left:68.72%;top:88.15%;width:12.31%;height:6.64%;" onclick="go(19)" title="sKate" style="border-radius:24px;"></div>
+      <img class="bg" src="https://www.figma.com/api/mcp/asset/9ed24f7f-1ff2-4329-bb62-ba2ece5d9ece" loading="lazy" alt="">
+      <img class="yasna-sym pos-396" src="https://www.figma.com/api/mcp/asset/a8bc37f1-6cdb-4173-b5ed-e8d50ec5a83a" alt="">
+      <div class="hs" style="left:18.97%;top:88.15%;width:12.31%;height:6.64%;border-radius:24px;" onclick="go(11)" title="План"></div>
+      <div class="hs" style="left:52.05%;top:88.15%;width:12.31%;height:6.64%;border-radius:24px;" onclick="go(13)" title="Поток"></div>
+      <div class="hs" style="left:68.72%;top:88.15%;width:12.31%;height:6.64%;border-radius:24px;" onclick="go(19)" title="sKate"></div>
     </div>
 
-    <!-- S19 · 7_1.1v_Yasna_Day Question / sKate -->
+    <!-- 19 · sKate профиль -->
     <div class="screen" id="s19">
-      <img class="bg" src="https://www.figma.com/api/mcp/asset/a8aecbd6-e0cc-426e-824b-68d94471f89c" alt="" loading="lazy">
-      <!-- Tabbar: Plan -->
-      <div class="hs" style="left:18.97%;top:88.15%;width:12.31%;height:6.64%;" onclick="go(11)" title="План" style="border-radius:24px;"></div>
-      <!-- Tabbar: Ясна -->
-      <div class="hs" style="left:35.64%;top:88.15%;width:12.31%;height:6.64%;" onclick="go(17)" title="Ясна" style="border-radius:24px;"></div>
-      <!-- Tabbar: Поток -->
-      <div class="hs" style="left:52.05%;top:88.15%;width:12.31%;height:6.64%;" onclick="go(13)" title="Поток" style="border-radius:24px;"></div>
+      <img class="bg" src="https://www.figma.com/api/mcp/asset/78005854-d6f5-4836-b0d6-b359fe7d1df6" loading="lazy" alt="">
+      <div class="hs" style="left:18.97%;top:88.15%;width:12.31%;height:6.64%;border-radius:24px;" onclick="go(11)" title="План"></div>
+      <div class="hs" style="left:35.64%;top:88.15%;width:12.31%;height:6.64%;border-radius:24px;" onclick="go(17)" title="Ясна"></div>
+      <div class="hs" style="left:52.05%;top:88.15%;width:12.31%;height:6.64%;border-radius:24px;" onclick="go(13)" title="Поток"></div>
     </div>
 
-    <!-- Tap zones (behind hotspots, z-index:5) -->
     <div class="tap-back" id="tapBack"></div>
     <div class="tap-fwd"  id="tapFwd"></div>
   </div>
 
-  <!-- ══ Sidebar ══ -->
   <div class="sidebar" id="sidebar"></div>
-
 </div>
 
 <script>
-/* ══ Data ══ */
-const SCREENS = [
-  { label: '01 · Обложка',         img: 'https://www.figma.com/api/mcp/asset/fe85b5f2-8d86-4f5b-bb34-67293696282a' },
-  { label: '02 · Главная',          img: 'https://www.figma.com/api/mcp/asset/1b2589a4-5976-48d5-ac9d-6ca8332c016d' },
-  { label: '03 · Онбординг 1/5',   img: 'https://www.figma.com/api/mcp/asset/34ac0823-1066-4276-9628-0e996399cb8a' },
-  { label: '04 · Онбординг 2/5',   img: 'https://www.figma.com/api/mcp/asset/b8394e3e-e87c-4a9f-b65b-e6ff3d3b0d04' },
-  { label: '05 · Онбординг 3/5',   img: 'https://www.figma.com/api/mcp/asset/4f4c11ef-84fb-40a9-9ef6-3158f0a4a00d' },
-  { label: '06 · Онбординг 4/5',   img: 'https://www.figma.com/api/mcp/asset/6c1fd7f3-8fed-4e14-b211-0d614565bf41' },
-  { label: '07 · Онбординг 5/5',   img: 'https://www.figma.com/api/mcp/asset/6a59d7fb-83a9-4e92-84c9-fee6036d2dc0' },
-  { label: '08 · Портрет',          img: 'https://www.figma.com/api/mcp/asset/1854fde9-f742-4065-8dde-4ffe2a45243c' },
-  { label: '09 · Цель',             img: 'https://www.figma.com/api/mcp/asset/f2218c61-73ca-4459-85dd-89ff6493f49e' },
-  { label: '10 · Планировщик',      img: 'https://www.figma.com/api/mcp/asset/aa48f717-dfe6-4934-b27d-35172b645f61' },
-  { label: '11 · Время задач',      img: 'https://www.figma.com/api/mcp/asset/ffed12e0-8947-4d40-9ced-2b0c5a5e7c5e' },
-  { label: '12 · Расписание',       img: 'https://www.figma.com/api/mcp/asset/dd189309-da82-4a21-b73b-183ed3510b98' },
-  { label: '13 · Задачи',           img: 'https://www.figma.com/api/mcp/asset/6e27d50d-0370-4b77-9768-c7ee1140e2a5' },
-  { label: '14 · Поток',            img: 'https://www.figma.com/api/mcp/asset/4e1ed670-1f78-4bfe-a43d-978111148339' },
-  { label: '15 · Поток + Ясна',     img: 'https://www.figma.com/api/mcp/asset/67b84665-e90d-4334-8404-0ce8d2f73209' },
-  { label: '16 · Поток первый раз', img: 'https://www.figma.com/api/mcp/asset/6bedeb66-9947-4c5b-b195-871db282c693' },
-  { label: '17 · Папки',            img: 'https://www.figma.com/api/mcp/asset/e47a8d2a-0ea1-49f7-9f0e-dca6fae86ff2' },
-  { label: '18 · Ясна — вопрос',    img: 'https://www.figma.com/api/mcp/asset/b99a83c2-65eb-476d-9be0-f59fff718c37' },
-  { label: '19 · Ясна — ответ',     img: 'https://www.figma.com/api/mcp/asset/c484dd7b-0bad-4415-9dc6-7cdb6f2b993c' },
-  { label: '20 · sKate профиль',    img: 'https://www.figma.com/api/mcp/asset/a8aecbd6-e0cc-426e-824b-68d94471f89c' },
+const SCREENS=[
+  {label:'01 · Обложка',img:'https://www.figma.com/api/mcp/asset/89b42ea8-c541-41b6-823a-515f46146b01'},
+  {label:'02 · Главная',img:'https://www.figma.com/api/mcp/asset/9e0d7d62-125d-45e2-8665-18083bf431a7'},
+  {label:'03 · Онбординг 1/5',img:'https://www.figma.com/api/mcp/asset/e3378c94-7cb0-4f56-bd52-7011bac69c0e'},
+  {label:'04 · Онбординг 2/5',img:'https://www.figma.com/api/mcp/asset/e1862e7a-9be8-4948-b597-67bc34f8423c'},
+  {label:'05 · Онбординг 3/5',img:'https://www.figma.com/api/mcp/asset/34ee3fb1-c826-4aa6-a448-52fd544dc8c5'},
+  {label:'06 · Онбординг 4/5',img:'https://www.figma.com/api/mcp/asset/5f1387d2-64fe-41f3-9e9f-2fffec9acac0'},
+  {label:'07 · Онбординг 5/5',img:'https://www.figma.com/api/mcp/asset/a53ec1ba-9142-492d-9b06-756a55b6369f'},
+  {label:'08 · Портрет',img:'https://www.figma.com/api/mcp/asset/880cfd3e-e523-4967-9bce-8c55bcd3d41e'},
+  {label:'09 · Цель',img:'https://www.figma.com/api/mcp/asset/a3975933-6b90-4520-aea0-bd469838cfa4'},
+  {label:'10 · Планировщик',img:'https://www.figma.com/api/mcp/asset/2cab8511-7ebc-411a-b1ca-069311991fe9'},
+  {label:'11 · Время задач',img:'https://www.figma.com/api/mcp/asset/5af40108-3ea4-47a1-bfcc-d5eccd2d6672'},
+  {label:'12 · Расписание',img:'https://www.figma.com/api/mcp/asset/83465d4a-257e-4574-816f-33a8c323031c'},
+  {label:'13 · Задачи',img:'https://www.figma.com/api/mcp/asset/c8dea07d-03c3-4b4e-b674-ac1cff6f687a'},
+  {label:'14 · Поток',img:'https://www.figma.com/api/mcp/asset/48780406-8114-4e28-81b5-542d0ec1a148'},
+  {label:'15 · Поток + Ясна',img:'https://www.figma.com/api/mcp/asset/d1b5d378-6949-4791-bbd5-9e034b86d149'},
+  {label:'16 · Поток первый раз',img:'https://www.figma.com/api/mcp/asset/31e164c7-e617-4138-b01f-45274fa6ac10'},
+  {label:'17 · Папки',img:'https://www.figma.com/api/mcp/asset/b09d703f-3b23-4505-a98c-65e2f7d6c92c'},
+  {label:'18 · Ясна — вопрос',img:'https://www.figma.com/api/mcp/asset/c67cb188-f71f-4f75-9847-80bc090af521'},
+  {label:'19 · Ясна — ответ',img:'https://www.figma.com/api/mcp/asset/9ed24f7f-1ff2-4329-bb62-ba2ece5d9ece'},
+  {label:'20 · sKate профиль',img:'https://www.figma.com/api/mcp/asset/78005854-d6f5-4836-b0d6-b359fe7d1df6'},
 ];
 
-let current = 0;
-const counter  = document.getElementById('counter');
-const progress = document.getElementById('progress');
-const sidebar  = document.getElementById('sidebar');
+let cur=0;
+const counter=document.getElementById('counter');
+const progress=document.getElementById('progress');
+const sidebar=document.getElementById('sidebar');
 
-/* Build sidebar */
-SCREENS.forEach((s, i) => {
-  const d = document.createElement('div');
-  d.className = 'thumb' + (i === 0 ? ' active' : '');
-  d.id = 'th' + i;
-  d.innerHTML = `<img src="${s.img}" loading="lazy" alt=""><div class="thumb-label">${s.label}</div>`;
-  d.addEventListener('click', () => go(i));
+SCREENS.forEach((s,i)=>{
+  const d=document.createElement('div');
+  d.className='thumb'+(i===0?' active':'');
+  d.id='th'+i;
+  d.innerHTML=`<img src="${s.img}" loading="lazy" alt=""><div class="thumb-label">${s.label}</div>`;
+  d.addEventListener('click',()=>go(i));
   sidebar.appendChild(d);
 });
 
-/* Navigation */
-function go(idx) {
-  if (idx < 0 || idx >= SCREENS.length) return;
-  document.getElementById('s' + current).classList.remove('active');
-  document.getElementById('th' + current).classList.remove('active');
-  current = idx;
-  document.getElementById('s' + current).classList.add('active');
-  const th = document.getElementById('th' + current);
+function go(idx){
+  if(idx<0||idx>=SCREENS.length)return;
+  document.getElementById('s'+cur).classList.remove('active');
+  document.getElementById('th'+cur).classList.remove('active');
+  cur=idx;
+  document.getElementById('s'+cur).classList.add('active');
+  const th=document.getElementById('th'+cur);
   th.classList.add('active');
-  th.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  counter.textContent = `${current + 1} / ${SCREENS.length}`;
-  progress.style.width = `${(current + 1) / SCREENS.length * 100}%`;
+  th.scrollIntoView({behavior:'smooth',block:'nearest'});
+  counter.textContent=`${cur+1} / ${SCREENS.length}`;
+  progress.style.width=`${(cur+1)/SCREENS.length*100}%`;
 }
 
-/* Tap zones */
-document.getElementById('tapBack').addEventListener('click', () => go(current - 1));
-document.getElementById('tapFwd').addEventListener('click',  () => go(current + 1));
+document.getElementById('tapBack').addEventListener('click',()=>go(cur-1));
+document.getElementById('tapFwd').addEventListener('click',()=>go(cur+1));
 
-/* Touch swipe */
-let tx = 0, ty = 0, moved = false;
-const phone = document.getElementById('phone');
-phone.addEventListener('touchstart', e => {
-  tx = e.touches[0].clientX; ty = e.touches[0].clientY; moved = false;
-}, { passive: true });
-phone.addEventListener('touchmove', e => {
-  if (Math.abs(e.touches[0].clientX - tx) > 8 || Math.abs(e.touches[0].clientY - ty) > 8) moved = true;
-}, { passive: true });
-phone.addEventListener('touchend', e => {
-  if (moved) {
-    const dx = e.changedTouches[0].clientX - tx;
-    if (Math.abs(dx) > 40) dx < 0 ? go(current + 1) : go(current - 1);
-  }
+let tx=0,moved=false;
+const phone=document.getElementById('phone');
+phone.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;moved=false;},{passive:true});
+phone.addEventListener('touchmove',e=>{if(Math.abs(e.touches[0].clientX-tx)>8)moved=true;},{passive:true});
+phone.addEventListener('touchend',e=>{
+  if(!moved)return;
+  const dx=e.changedTouches[0].clientX-tx;
+  if(Math.abs(dx)>40)dx<0?go(cur+1):go(cur-1);
 });
 
-/* Keyboard */
-document.addEventListener('keydown', e => {
-  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); go(current + 1); }
-  if (e.key === 'ArrowLeft')                   { e.preventDefault(); go(current - 1); }
-  if (e.key === 'Home')  go(0);
-  if (e.key === 'End')   go(SCREENS.length - 1);
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();go(cur+1);}
+  if(e.key==='ArrowLeft'){e.preventDefault();go(cur-1);}
+  if(e.key==='Home')go(0);
+  if(e.key==='End')go(SCREENS.length-1);
 });
-
-/* Preload next/prev images */
-function preload() {
-  [current + 1, current + 2].forEach(i => {
-    if (i < SCREENS.length) {
-      const img = document.querySelector(`#s${i} .bg`);
-      if (img) img.loading = 'eager';
-    }
-  });
-}
-setInterval(preload, 1500);
 </script>
 </body>
 </html>
